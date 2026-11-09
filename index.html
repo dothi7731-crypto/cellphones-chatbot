@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hỏi thử chatbot CellphoneS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1b1e27;
+      --muted: #5d6272;
+      --line: #e3e5ea;
+      --paper: #f7f8fa;
+      --red: #d70018;
+      --red-deep: #9e0012;
+      --tint: #fdecee;
+      color-scheme: light;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      padding-bottom: 7rem; /* chừa chỗ cho nút chat ở góc dưới */
+      font-family: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem clamp(1.25rem, 5vw, 4rem);
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.01em; color: var(--red); }
+    .tag { font-size: 0.875rem; color: var(--muted); }
+
+    .wrap {
+      display: grid;
+      gap: 2.5rem;
+      padding: clamp(1.75rem, 5vw, 4rem) clamp(1.25rem, 5vw, 4rem);
+      max-width: 72rem;
+      margin: 0 auto;
+    }
+    @media (min-width: 60rem) {
+      .wrap { grid-template-columns: 5fr 7fr; gap: 4rem; align-items: start; }
+      .intro { position: sticky; top: 2rem; }
+    }
+
+    h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      line-height: 1.12;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .lead { margin: 0 0 2rem; max-width: 34rem; color: var(--muted); font-size: 1.0625rem; }
+
+    .steps { margin: 0; padding: 0; list-style: none; counter-reset: step; max-width: 34rem; }
+    .steps li {
+      counter-increment: step;
+      display: grid;
+      grid-template-columns: 2rem 1fr;
+      gap: 0.75rem;
+      padding: 0.85rem 0;
+      border-top: 1px solid var(--line);
+    }
+    .steps li:last-child { border-bottom: 1px solid var(--line); }
+    .steps li::before {
+      content: counter(step);
+      width: 1.75rem;
+      height: 1.75rem;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--red);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    .hint { margin: 1.5rem 0 0; max-width: 34rem; font-size: 0.9375rem; color: var(--muted); }
+
+    h2 { margin: 0 0 0.25rem; font-size: 1.375rem; font-weight: 800; letter-spacing: -0.01em; }
+    .sub { margin: 0 0 1.5rem; color: var(--muted); font-size: 0.9375rem; }
+
+    .group { margin-bottom: 1.75rem; }
+    .group h3 {
+      margin: 0 0 0.25rem;
+      padding-bottom: 0.4rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-bottom: 1px solid var(--line);
+    }
+    .q {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      max-width: 36rem;
+      margin: 0.55rem 0;
+      padding: 0.6rem 0.7rem 0.6rem 1.1rem;
+      background: var(--tint);
+      border-radius: 18px 18px 18px 4px;
+    }
+    .q span { overflow-wrap: anywhere; }
+    .copy {
+      flex: none;
+      min-width: 4.6rem;
+      padding: 0.3rem 0.8rem;
+      font: 600 0.8125rem/1.4 inherit;
+      font-family: inherit;
+      color: var(--red);
+      background: #fff;
+      border: 1px solid var(--red);
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .copy:hover { background: var(--red); color: #fff; }
+    .copy.ok { background: var(--red-deep); border-color: var(--red-deep); color: #fff; }
+    .copy:focus-visible, a:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+    #missing {
+      display: none;
+      margin: 0 0 1.75rem;
+      padding: 0.9rem 1.1rem;
+      max-width: 36rem;
+      background: #fff;
+      border-left: 4px solid var(--red);
+      font-size: 0.9375rem;
+    }
+    #missing.show { display: block; }
+    code { font-size: 0.875em; background: #fff; padding: 0.1rem 0.35rem; border: 1px solid var(--line); border-radius: 4px; }
+
+    footer {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 0 clamp(1.25rem, 5vw, 4rem);
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--red-deep); }
+
+    /* Giao diện khung chat Dialogflow Messenger */
+    df-messenger {
+      --df-messenger-button-titlebar-color: #d70018;
+      --df-messenger-button-titlebar-font-color: #ffffff;
+      --df-messenger-chat-background-color: #ffffff;
+      --df-messenger-font-color: #1b1e27;
+      --df-messenger-bot-message: #eef0f4;
+      --df-messenger-user-message: #fbd9dd;
+      --df-messenger-send-icon: #d70018;
+      --df-messenger-input-box-color: #f7f8fa;
+      --df-messenger-input-font-color: #1b1e27;
+      --df-messenger-input-placeholder-font-color: #5d6272;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="top">
+    <span class="brand">CellphoneS</span>
+    <span class="tag">Bản thử nghiệm chatbot</span>
+  </header>
+
+  <main class="wrap">
+    <section class="intro">
+      <h1>Hỏi thử chatbot tư vấn của CellphoneS</h1>
+      <p class="lead">Chatbot trả lời về sản phẩm, đặt hàng, giao hàng, bảo hành, đổi trả và khuyến mãi. Bấm biểu tượng chat ở góc dưới bên phải rồi nhắn như khi bạn hỏi nhân viên cửa hàng.</p>
+
+      <ol class="steps">
+        <li>Mở khung chat ở góc dưới bên phải màn hình.</li>
+        <li>Chép một câu hỏi mẫu bên cạnh, dán vào khung chat, hoặc tự gõ câu của bạn.</li>
+        <li>Ghi lại câu nào bot trả lời sai hoặc không hiểu, rồi gửi cho người tạo bot.</li>
+      </ol>
+
+      <p class="hint">Hãy thử cả câu không dấu, viết tắt, hoặc ngoài chủ đề (như hỏi thời tiết) để xem bot phản ứng thế nào.</p>
+    </section>
+
+    <section aria-labelledby="mau">
+      <div id="missing" role="status">
+        Chưa thấy chatbot trên trang này. Dán đoạn mã nhúng Dialogflow Messenger vào trước thẻ <code>&lt;/body&gt;</code> trong file <code>index.html</code>, rồi tải lại trang.
+      </div>
+
+      <h2 id="mau">Câu hỏi mẫu</h2>
+      <p class="sub">Bấm “Chép” rồi dán vào khung chat.</p>
+      <div id="groups"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Đây là bản chạy thử. Giá và chính sách trong câu trả lời có thể chưa đầy đủ hoặc đã thay đổi; thông tin chính thức xem tại <a href="https://cellphones.com.vn" target="_blank" rel="noopener">cellphones.com.vn</a>.</p>
+  </footer>
+
+  <!-- ===================================================================
+       DÁN ĐOẠN MÃ NHÚNG DIALOGFLOW MESSENGER VÀO ĐÂY
+       (Dialogflow ES Console → Integrations → Dialogflow Messenger → Enable
+        → copy toàn bộ mã, gồm cả thẻ <script> và thẻ <df-messenger>).
+       Nếu muốn khung chat dùng tiếng Việt cho câu chào đầu tiên, thêm
+       language-code="vi" vào thẻ <df-messenger>.
+       =================================================================== -->
+
+
+  <script>
+    // Thêm, sửa hoặc xóa câu hỏi mẫu tại đây.
+    var GROUPS = [
+      { title: "Tư vấn sản phẩm", items: [
+        "Điện thoại dưới 10 triệu nên mua cái nào?",
+        "So sánh iPhone 16 và iPhone 17 Pro",
+        "Laptop nào hợp sinh viên học lập trình?",
+        "MacBook Air M5 giá bao nhiêu?"
+      ]},
+      { title: "Mua hàng và thanh toán", items: [
+        "Đặt hàng online như thế nào?",
+        "Mua trả góp qua công ty tài chính nào?",
+        "Có thanh toán bằng MoMo không?"
+      ]},
+      { title: "Giao hàng và đơn hàng", items: [
+        "Bao lâu thì nhận được hàng?",
+        "Phí giao hàng là bao nhiêu?",
+        "Hủy đơn thì bao lâu được hoàn tiền?"
+      ]},
+      { title: "Bảo hành và đổi trả", items: [
+        "Điện thoại bảo hành bao lâu?",
+        "Điều kiện đổi trả là gì?",
+        "Máy lỗi có được đổi mới trong 30 ngày không?"
+      ]},
+      { title: "Ưu đãi và liên hệ", items: [
+        "Smember có quyền lợi gì?",
+        "Hotline của CellphoneS là gì?",
+        "Cho mình gặp nhân viên tư vấn"
+      ]}
+    ];
+
+    function fallbackCopy(text) {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    function copyText(text, btn) {
+      var done = function () {
+        btn.textContent = "Đã chép";
+        btn.classList.add("ok");
+        setTimeout(function () {
+          btn.textContent = "Chép";
+          btn.classList.remove("ok");
+        }, 1600);
+      };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
+      } else {
+        fallbackCopy(text);
+        done();
+      }
+    }
+
+    var root = document.getElementById("groups");
+    GROUPS.forEach(function (g) {
+      var section = document.createElement("div");
+      section.className = "group";
+      var h = document.createElement("h3");
+      h.textContent = g.title;
+      section.appendChild(h);
+      g.items.forEach(function (text) {
+        var row = document.createElement("div");
+        row.className = "q";
+        var span = document.createElement("span");
+        span.textContent = text;
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "copy";
+        btn.textContent = "Chép";
+        btn.setAttribute("aria-label", "Chép câu hỏi: " + text);
+        btn.addEventListener("click", function () { copyText(text, btn); });
+        row.appendChild(span);
+        row.appendChild(btn);
+        section.appendChild(row);
+      });
+      root.appendChild(section);
+    });
+
+    // Nhắc người tạo trang nếu chưa dán mã nhúng chatbot.
+    document.addEventListener("DOMContentLoaded", function () {
+      if (!document.querySelector("df-messenger")) {
+        document.getElementById("missing").classList.add("show");
+      }
+    });
+  </script>
+</body>
+</html>
